@@ -1,0 +1,43 @@
+Let's explain the 2-D parallel stuff..
+
+multiply_parallel()
+Specifically, for each row in the first matrix, the dot product with every row of the transposed second matrix (stored in b_transposed) is computed in parallel.
+The rest is computed in series. 
+
+
+multiply_over_parallel() on the other hand uses much more.
+
+- Parallel Part 1:
+Utilizes .par_iter() on self.data to parallelize the computation across each row of the resulting matrix.
+This parallelization ensures that the processing of different rows of the first matrix can occur simultaneously.
+
+- Parallel Part 2:
+Applies b_transposed.par_iter() for iterating over the rows of the transposed second matrix in parallel.
+Enables concurrent computation of dot products for a single row in the first matrix against all rows of the transposed second matrix.
+
+- Parallel Part 3:
+Executes the dot product calculation in parallel using a_row.par_iter().zip(b_row).map(|(a_val, b_val)| a_val * b_val).sum().
+This step ensures that the multiplication and subsequent addition operations required to compute a single dot product are also carried out in parallel.
+
+-------------------------------
+
+Let's explain the 3-D parallel case
+
+multiply_parallel()
+
+The method uses self.data.par_iter().zip(other.data.par_iter()) to iterate over the layers of the two 3D matrices concurrently. This means that the multiplication of corresponding 2D matrices from self and other across each layer (depth) of the 3D matrices is happening in parallel. If there are p layers, up to p multiplications of 2D matrices can occur simultaneously, depending on the number of available CPU cores and how Rayon manages the parallel tasks.
+
+
+multiply_over_parallel()
+
+- Layer-wise Parallelism: 
+The outermost parallelism remains unchanged, processing each layer in parallel.
+
+- Row-wise Parallelism: 
+Within each layer's computation, a_layer.par_iter() is used instead of a_layer.iter(), enabling parallel processing of each row in a 2D matrix of self.
+
+- Column-wise Parallelism: 
+For each row in a_layer, b_transposed.par_iter() allows parallel processing of the transposed rows of b_layer, facilitating parallel computation of the dot products.
+
+- Element-wise Parallelism: 
+The dot product calculation a_row.par_iter().zip(b_row).map(|(a_val, b_val)| a_val * b_val).sum::<u32>() now also runs in parallel, computing each multiplication and accumulating the sum in parallel.
