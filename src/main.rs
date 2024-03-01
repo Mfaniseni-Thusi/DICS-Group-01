@@ -10,7 +10,9 @@ use std::time::{Duration, Instant};
 
 fn main() {
     let dimensions = [10, 20, 30];
-    let runs = 50;
+    let runs = 10;
+
+    println!("Values averaged across {} runs.", runs);
 
     // Open a file for writing
     let file = File::create("results.csv").expect("Could not create file");
@@ -26,6 +28,8 @@ fn main() {
     for &dimension in &dimensions {
         test_matrix_multiplication_3d(dimension, runs, &mut writer);
     }
+
+    println!("Write to cvs success!");
 }
 
 fn test_matrix_multiplication_2d(dimensions: usize, runs: usize, writer: &mut BufWriter<File>) {
