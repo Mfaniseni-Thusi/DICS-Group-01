@@ -18,5 +18,6 @@ typedef struct {
 MatrixMultiplier* createMatrixMultiplier(int size);
 void destroyMatrixMultiplier(MatrixMultiplier* multiplier);
 void multiplyMatrices(MatrixMultiplier* multiplier);
+void multiplyMatricesSerial(MatrixMultiplier* multiplier);//classic serial method
 
 #endif // MATRIXMULTIPLIER_H

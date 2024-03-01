@@ -84,3 +84,18 @@ static void* multiplyLayer(void* arg) {
 
     pthread_exit(NULL);
 }
+void multiplyMatricesSerial(MatrixMultiplier* multiplier) {
+    if (!multiplier) return;
+
+    int size = multiplier->size;
+    for (int layer = 0; layer < size; layer++) {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                multiplier->matrixC->data[layer][i][j] = 0;
+                for (int k = 0; k < size; k++) {
+                    multiplier->matrixC->data[layer][i][j] += multiplier->matrixA->data[layer][i][k] * multiplier->matrixB->data[layer][k][j];
+                }
+            }
+        }
+    }
+}
