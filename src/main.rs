@@ -52,7 +52,7 @@ fn test_matrix_multiplication_2d(dimensions: usize, runs: usize) {
     let average_duration_over_parallel = total_duration_over_parallel / runs as u32;
 
     // Print average computation times
-    println!("2D Matrix Multiplication Test for {}x{} Matrix over {} Runs", dimensions, dimensions, runs);
+    println!("\n2D Matrix Multiplication Test for {}x{} Matrix over {} Runs", dimensions, dimensions, runs);
     println!("Average time (Sequential): {:?}", average_duration_sequential);
     println!("Average time (2 Core): {:?}", average_duration_parallel);
     println!("Average time (3-Core): {:?}", average_duration_over_parallel);
@@ -96,7 +96,7 @@ fn test_matrix_multiplication_3d(dimensions: usize, runs: usize) {
     let average_duration_4_core = total_duration_4_core / runs as u32;
 
     // Print average computation times
-    println!("Dimensions: {}x{}x{}, Runs: {}", dimensions, dimensions, dimensions, runs);
+    println!("\n3D Matrix Multiplication Test for {}x{}x{} Matrix over {} Runs:", dimensions, dimensions, dimensions, runs);
     println!("Average time (Sequential): {:?}", average_duration_sequential);
     println!("Average time (2 Core): {:?}", average_duration_2_core);
     println!("Average time (3 Core): {:?}", average_duration_3_core);
