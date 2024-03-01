@@ -4,7 +4,6 @@
 #include <string.h>
 #include <time.h>
 #include <sys/time.h>
-
 void runAndMeasure(int size, const char* method, FILE* outputFile) {
     struct timeval start, end;
     MatrixMultiplier* multiplier = createMatrixMultiplier(size);

@@ -42,5 +42,3 @@ void printMatrix3D(const Matrix3D* matrix) {
         printf("\n");
     }
 }
-
-// Implement other functions as needed
