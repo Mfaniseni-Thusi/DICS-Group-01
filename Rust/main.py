@@ -38,7 +38,7 @@ for ax, dtype in zip(axs, ['2D', '3D']):
             # Print percentages for the current type and dimension
             print(f"{dtype} {dimension}x{dimension}" + ("x" + str(dimension) if dtype == "3D" else ""))
             for core, percentage in zip(cores, percentages):
-                print(f"{core}: {percentage:.2f}% quicker")
+                print(f"{core}: {percentage:.2f}% speed-up")
             print()
 
             # Plot these percentages on the current subplot
