@@ -12,7 +12,7 @@ fn main() {
     let dimensions = [10, 20, 30];
     let runs = 100;
 
-    println!("Values averaged across {} runs.", runs);
+    println!("Values averaging across {} runs...", runs);
 
     // Open a file for writing
     let file = File::create("results.csv").expect("Could not create file");
