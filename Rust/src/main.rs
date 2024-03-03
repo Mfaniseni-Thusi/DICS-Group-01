@@ -29,7 +29,7 @@ fn main() {
         test_matrix_multiplication_3d(dimension, runs, &mut writer);
     }
 
-    println!("Write to cvs success!");
+    println!("Write to csv success!");
 }
 
 fn test_matrix_multiplication_2d(dimensions: usize, runs: usize, writer: &mut BufWriter<File>) {
