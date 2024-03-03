@@ -1,3 +1,6 @@
+// Matrix multiplication assistance from:
+// https://boydjohnson.dev/blog/concurrency-matrix-multiplication/
+
 use rand::{distributions::Uniform, Rng};
 use rayon::prelude::*;
 
@@ -6,10 +9,12 @@ pub struct Matrix3D {
 }
 
 impl Matrix3D {
+
     // Generates a new 3D matrix filled with random numbers within the specified range
     pub fn new_random(layers: usize, rows: usize, cols: usize) -> Self {
         let mut rng = rand::thread_rng();
         let range = Uniform::from(1..=20);
+
         let data = (0..layers)
             .map(|_| {
                 (0..rows)
@@ -17,6 +22,7 @@ impl Matrix3D {
                     .collect()
             })
             .collect();
+
         Matrix3D { data }
     }
 
@@ -57,9 +63,12 @@ impl Matrix3D {
         let chunk_size = (self.data.len() + 2) / 3; // Divide layers into 3 chunks, rounding up
     
         let result_data: Vec<Vec<Vec<u32>>> = self.data
+
             .par_chunks(chunk_size) // Splitting the layers into roughly 3 chunks
+
             .flat_map(|chunk| {
                 chunk.iter().zip(other.data.iter()).map(|(a_layer, b_layer)| {
+
                     // Transposing each 2D matrix in `other` for efficient dot product calculation
                     let b_transposed: Vec<Vec<u32>> = (0..b_layer[0].len())
                         .map(|i| b_layer.iter().map(|row| row[i]).collect())
@@ -84,18 +93,21 @@ impl Matrix3D {
 
         let result_data: Vec<Vec<Vec<u32>>> = self.data.par_iter().zip(other.data.par_iter())
             .map(|(a_layer, b_layer)| {
+
                 // Transposing each 2D matrix in `other` for efficient dot product calculation
                 let b_transposed: Vec<Vec<u32>> = (0..b_layer[0].len())
                     .map(|i| b_layer.iter().map(|row| row[i]).collect())
                     .collect();
 
                 // Performing 2D matrix multiplication for each layer in parallel
-                a_layer.par_iter()  // Changed to par_iter() for parallel row processing
+                a_layer.par_iter() 
                     .map(|a_row| {
-                        b_transposed.par_iter()  // Changed to par_iter() for parallel processing of transposed rows
+
+                        b_transposed.par_iter() 
                             .map(|b_row| {
+
                                 // Each element of the resulting row is computed in parallel
-                                a_row.par_iter()  // Changed to par_iter() for parallel element-wise multiplication and sum
+                                a_row.par_iter()  // par_iter() for parallel element-wise multiplication and sum
                                     .zip(b_row)
                                     .map(|(a_val, b_val)| a_val * b_val)
                                     .sum::<u32>()
@@ -115,6 +127,7 @@ impl Matrix3D {
 
         let result_data: Vec<Vec<Vec<u32>>> = self.data.iter().zip(other.data.iter())
             .map(|(a_layer, b_layer)| {
+
                 // Transposing each 2D matrix in `other` for efficient dot product calculation
                 let b_transposed: Vec<Vec<u32>> = (0..b_layer[0].len())
                     .map(|i| b_layer.iter().map(|row| row[i]).collect())

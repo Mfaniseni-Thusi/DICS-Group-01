@@ -1,7 +1,7 @@
-mod matrix_2_d; // Declare the matrix module
+mod matrix_2_d;
 mod matrix_3_d;
 
-use matrix_2_d::Matrix; // Use the Matrix struct from the matrix module
+use matrix_2_d::Matrix; 
 use matrix_3_d::Matrix3D;
 
 use std::fs::File;
@@ -46,11 +46,11 @@ fn test_matrix_multiplication_2d(dimensions: usize, runs: usize, writer: &mut Bu
         total_duration_sequential += start.elapsed();
 
         let start = Instant::now();
-        let _ = matrix_a.multiply_parallel(&matrix_b);
+        let _ = matrix_a.multiply_2_core(&matrix_b);
         total_duration_parallel += start.elapsed();
 
         let start = Instant::now();
-        let _ = matrix_a.multiply_over_parallel(&matrix_b);
+        let _ = matrix_a.multiply_3_core(&matrix_b);
         total_duration_over_parallel += start.elapsed();
     }
 

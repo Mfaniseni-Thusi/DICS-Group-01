@@ -1,5 +1,6 @@
-// Import the necessary modules from the `rand` crate for random number generation,
-// and from `rayon` for parallel computing capabilities.
+// Troubleshooting advice for parallel running from:
+// https://users.rust-lang.org/t/par-iter-not-running-in-parallel/67582
+
 use rand::{distributions::Uniform, Rng};
 use rayon::prelude::*;
 
@@ -22,7 +23,6 @@ impl Matrix {
         let range = Uniform::from(1..=20);
 
         // Generate the matrix data: a vector of `rows` vectors, each containing `cols` random numbers
-        // sampled from the defined uniform distribution.
         let data = (0..rows)
             .map(|_| (0..cols).map(|_| rng.sample(&range)).collect())
             .collect();
@@ -59,7 +59,7 @@ impl Matrix {
     }
 
     // A public method for performing parallel matrix multiplication.
-    pub fn multiply_parallel(&self, other: &Matrix) -> Matrix {
+    pub fn multiply_2_core(&self, other: &Matrix) -> Matrix {
 
         // Transpose the second matrix to optimize access patterns in the multiplication.
         let b_transposed: Vec<Vec<u32>> = (0..other.data[0].len())
@@ -91,7 +91,7 @@ impl Matrix {
         Matrix { data: result_data }
     }
 
-    pub fn multiply_over_parallel(&self, other: &Matrix) -> Matrix {
+    pub fn multiply_3_core(&self, other: &Matrix) -> Matrix {
 
         // Transpose the second matrix to optimize access patterns in the multiplication.
         let b_transposed: Vec<Vec<u32>> = (0..other.data[0].len())
