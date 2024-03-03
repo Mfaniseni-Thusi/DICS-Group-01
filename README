@@ -1,13 +1,26 @@
-cd Rust && cargo run
+## Use these commands to run:
+cd Rust
+cargo run
+python main.py
 
-Let's explain the 2-D parallel stuff..
+## Rust code explanation
 
-multiply_parallel()
-Specifically, for each row in the first matrix, the dot product with every row of the transposed second matrix (stored in b_transposed) is computed in parallel.
+For simplification, the use of .par_iter() in Rayon allows automatic parallel iteration over a data collection, distributing work across available CPU cores. This approach abstracts away the explicit management of thread pools or core allocation, letting the library efficiently utilize the system's concurrency capabilities based on runtime conditions and workload characteristics. The number of cores are directly related to how many .par_iter()'s are used. 
+
+The timings of the different functions are recorded into a CSV file, which is then analysed using a python script called main.py. This python script will compute the percentages (quicker or slower) and it will create a graph to better visualise the data.
+
+---------- 2-D implementation ----------
+
+### multiply_sequential()
+
+Everything ran sequentially as per mathematical equations.
+
+### multiply_2_core()
+
+For each row in the first matrix, the dot product with every row of the transposed second matrix (stored in b_transposed) is computed in parallel.
 The rest is computed in series. 
 
-
-multiply_over_parallel() on the other hand uses much more.
+### multiply_3_core()
 
 - Parallel Part 1:
 Utilizes .par_iter() on self.data to parallelize the computation across each row of the resulting matrix.
@@ -21,25 +34,25 @@ Enables concurrent computation of dot products for a single row in the first mat
 Executes the dot product calculation in parallel using a_row.par_iter().zip(b_row).map(|(a_val, b_val)| a_val * b_val).sum().
 This step ensures that the multiplication and subsequent addition operations required to compute a single dot product are also carried out in parallel.
 
--------------------------------
+---------- 3-D implementation ----------
 
-Let's explain the 3-D parallel case
+### multiply_sequential()
 
-multiply_parallel()
+This method iterates through the layers and performs 2D matrix multiplication without parallelism.
 
-The method uses self.data.par_iter().zip(other.data.par_iter()) to iterate over the layers of the two 3D matrices concurrently. This means that the multiplication of corresponding 2D matrices from self and other across each layer (depth) of the 3D matrices is happening in parallel. If there are p layers, up to p multiplications of 2D matrices can occur simultaneously, depending on the number of available CPU cores and how Rayon manages the parallel tasks.
+### multiply_2_core()
 
+- Parallel Part 1: 
+Multiplication is parallelized at the layer level, iterating through each 2D matrix layer in parallel.
 
-multiply_over_parallel()
+### multiply_3_core()
 
-- Layer-wise Parallelism: 
-The outermost parallelism remains unchanged, processing each layer in parallel.
+- Parallel Part 2:
+As above with...
+The 3D matrix is divided into chunks, and each chunk's layers are processed in parallel. Within each layer, the 2D matrix multiplication is sequential.
 
-- Row-wise Parallelism: 
-Within each layer's computation, a_layer.par_iter() is used instead of a_layer.iter(), enabling parallel processing of each row in a 2D matrix of self.
+### multiply_4_core()
 
-- Column-wise Parallelism: 
-For each row in a_layer, b_transposed.par_iter() allows parallel processing of the transposed rows of b_layer, facilitating parallel computation of the dot products.
-
-- Element-wise Parallelism: 
-The dot product calculation a_row.par_iter().zip(b_row).map(|(a_val, b_val)| a_val * b_val).sum::<u32>() now also runs in parallel, computing each multiplication and accumulating the sum in parallel.
+- Parallel Part 3:
+As above with...
+The highest parallelism level by not only iterating through each layer in parallel but also performing the dot product calculations within each 2D matrix multiplication in parallel.
