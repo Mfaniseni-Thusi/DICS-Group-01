@@ -1,3 +1,5 @@
+cd Rust && cargo run
+
 Let's explain the 2-D parallel stuff..
 
 multiply_parallel()
