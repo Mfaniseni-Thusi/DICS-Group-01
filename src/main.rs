@@ -10,7 +10,7 @@ use std::time::{Duration, Instant};
 
 fn main() {
     let dimensions = [10, 20, 30];
-    let runs = 10;
+    let runs = 100;
 
     println!("Values averaged across {} runs.", runs);
 
