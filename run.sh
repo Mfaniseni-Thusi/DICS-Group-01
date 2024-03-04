@@ -14,7 +14,7 @@ cd ..
 # Run the C program
 
 # Return to main project directory
-cd ..
+# cd ..
 
 # Execute the Python script for analysis
 python main.py

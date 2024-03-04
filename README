@@ -1,7 +1,6 @@
 ## Use these commands to run:
-cd Rust
-cargo run
-python main.py
+chmod +x run.sh
+./run.sh
 
 ## Rust code explanation
 

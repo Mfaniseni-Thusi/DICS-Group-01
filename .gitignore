@@ -2,3 +2,4 @@ Rust/target/
 *.csv
 *.txt
 .vscode/
+*.png
