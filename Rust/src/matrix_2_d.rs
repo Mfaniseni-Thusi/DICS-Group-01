@@ -3,6 +3,7 @@
 
 use rand::{distributions::Uniform, Rng};
 use rayon::prelude::*;
+use rayon::ThreadPoolBuilder;
 
 // Define a public `Matrix` struct that will hold the data for a 2D matrix.
 // The matrix data is stored as a vector of vectors of unsigned 32-bit integers (`Vec<Vec<u32>>`).
@@ -58,67 +59,34 @@ impl Matrix {
         Matrix { data: result_data }
     }
 
-    // A public method for performing parallel matrix multiplication.
-    pub fn multiply_2_core(&self, other: &Matrix) -> Matrix {
+    pub fn multiply_parallel(&self, other: &Matrix, num_cores: usize) -> Matrix {
+        // Create a thread pool with the specified number of threads.
+        let pool = ThreadPoolBuilder::new().num_threads(num_cores).build().unwrap();
 
-        // Transpose the second matrix to optimize access patterns in the multiplication.
-        let b_transposed: Vec<Vec<u32>> = (0..other.data[0].len())
-            .map(|i| other.data.iter().map(|row| row[i]).collect())
-            .collect();
+        pool.install(|| {
+            // Transpose the second matrix to optimize access patterns in the multiplication.
+            let b_transposed: Vec<Vec<u32>> = (0..other.data[0].len())
+                .map(|i| other.data.iter().map(|row| row[i]).collect())
+                .collect();
 
-        // Perform the matrix multiplication in parallel using Rayon's parallel iterators.
-        // `.par_iter()` is used to iterate over rows of the first matrix in parallel.
-        let result_data: Vec<Vec<u32>> = self.data.par_iter()
-            .map(|a_row| {
+            // Perform the matrix multiplication in parallel.
+            let result_data: Vec<Vec<u32>> = self.data.par_iter()
+                .map(|a_row| {
+                    b_transposed
+                        .iter()
+                        .map(|b_row| {
+                            a_row
+                                .iter()
+                                .zip(b_row)
+                                .map(|(a_val, b_val)| a_val * b_val)
+                                .sum()
+                        })
+                        .collect()
+                })
+                .collect();
 
-                // For each row in the first matrix, iterate over each row in the transposed second matrix.
-                b_transposed
-                    .iter()
-                    .map(|b_row| {
-
-                        // Calculate the dot product of the row from the first matrix and the row from the transposed second matrix.
-                        a_row
-                            .iter()
-                            .zip(b_row)
-                            .map(|(a_val, b_val)| a_val * b_val)
-                            .sum()
-                    })
-                    .collect()
-            })
-            .collect();
-
-        // Return a new `Matrix` containing the result of the parallel multiplication.
-        Matrix { data: result_data }
+            // Return a new `Matrix` containing the result.
+            Matrix { data: result_data }
+        })
     }
-
-    pub fn multiply_3_core(&self, other: &Matrix) -> Matrix {
-
-        // Transpose the second matrix to optimize access patterns in the multiplication.
-        let b_transposed: Vec<Vec<u32>> = (0..other.data[0].len())
-            .map(|i| other.data.iter().map(|row| row[i]).collect())
-            .collect();
-    
-        // Perform the matrix multiplication fully in parallel using Rayon's parallel iterators.
-        // `.par_iter()` is used to iterate over rows of the first matrix in parallel.
-        let result_data: Vec<Vec<u32>> = self.data.par_iter()
-            .map(|a_row| {
-
-                // Parallelize the iteration over each row in the transposed second matrix as well.
-                b_transposed.par_iter()
-                    .map(|b_row| {
-
-                        // The dot product calculation is performed in parallel for each element of the resulting row.
-                        a_row.par_iter()
-                            .zip(b_row)
-                            .map(|(a_val, b_val)| a_val * b_val)
-                            .sum()
-                    })
-                    .collect()
-            })
-            .collect();
-    
-        // Return a new `Matrix` containing the result of the fully parallel multiplication.
-        Matrix { data: result_data }
-    }
-    
 }

@@ -26,101 +26,6 @@ impl Matrix3D {
         Matrix3D { data }
     }
 
-    // Performs parallel multiplication of corresponding 2D matrices from two 3D matrices
-    pub fn multiply_2_core(&self, other: &Matrix3D) -> Matrix3D {
-        assert_eq!(self.data.len(), other.data.len(), "The number of layers must be equal.");
-
-        let result_data: Vec<Vec<Vec<u32>>> = self.data.par_iter().zip(other.data.par_iter())
-            .map(|(a_layer, b_layer)| {
-
-                // Transposing each 2D matrix in `other` for efficient dot product calculation
-                let b_transposed: Vec<Vec<u32>> = (0..b_layer[0].len())
-                    .map(|i| b_layer.iter().map(|row| row[i]).collect())
-                    .collect();
-
-                // Performing 2D matrix multiplication for each layer
-                a_layer.iter()
-                    .map(|a_row| {
-                        b_transposed.iter()
-                            .map(|b_row| {
-                                a_row.iter()
-                                    .zip(b_row)
-                                    .map(|(a_val, b_val)| a_val * b_val)
-                                    .sum()
-                            })
-                            .collect()
-                    })
-                    .collect()
-            })
-            .collect();
-
-        Matrix3D { data: result_data }
-    }
-
-    pub fn multiply_3_core(&self, other: &Matrix3D) -> Matrix3D {
-        assert_eq!(self.data.len(), other.data.len(), "The number of layers must be equal.");
-    
-        let chunk_size = (self.data.len() + 2) / 3; // Divide layers into 3 chunks, rounding up
-    
-        let result_data: Vec<Vec<Vec<u32>>> = self.data
-
-            .par_chunks(chunk_size) // Splitting the layers into roughly 3 chunks
-
-            .flat_map(|chunk| {
-                chunk.iter().zip(other.data.iter()).map(|(a_layer, b_layer)| {
-
-                    // Transposing each 2D matrix in `other` for efficient dot product calculation
-                    let b_transposed: Vec<Vec<u32>> = (0..b_layer[0].len())
-                        .map(|i| b_layer.iter().map(|row| row[i]).collect())
-                        .collect();
-    
-                    // Performing 2D matrix multiplication for each layer
-                    a_layer.iter().map(|a_row| {
-                        b_transposed.iter().map(|b_row| {
-                            a_row.iter().zip(b_row).map(|(a_val, b_val)| a_val * b_val).sum()
-                        }).collect()
-                    }).collect()
-                }).collect::<Vec<Vec<Vec<u32>>>>()
-            })
-            .collect();
-    
-        Matrix3D { data: result_data }
-    }
-
-    // Performs parallel multiplication of corresponding 2D matrices from two 3D matrices with enhanced parallelism
-    pub fn multiply_4_core(&self, other: &Matrix3D) -> Matrix3D {
-        assert_eq!(self.data.len(), other.data.len(), "The number of layers must be equal.");
-
-        let result_data: Vec<Vec<Vec<u32>>> = self.data.par_iter().zip(other.data.par_iter())
-            .map(|(a_layer, b_layer)| {
-
-                // Transposing each 2D matrix in `other` for efficient dot product calculation
-                let b_transposed: Vec<Vec<u32>> = (0..b_layer[0].len())
-                    .map(|i| b_layer.iter().map(|row| row[i]).collect())
-                    .collect();
-
-                // Performing 2D matrix multiplication for each layer in parallel
-                a_layer.par_iter() 
-                    .map(|a_row| {
-
-                        b_transposed.par_iter() 
-                            .map(|b_row| {
-
-                                // Each element of the resulting row is computed in parallel
-                                a_row.par_iter()  // par_iter() for parallel element-wise multiplication and sum
-                                    .zip(b_row)
-                                    .map(|(a_val, b_val)| a_val * b_val)
-                                    .sum::<u32>()
-                            })
-                            .collect::<Vec<u32>>()
-                    })
-                    .collect::<Vec<Vec<u32>>>()
-            })
-            .collect();
-
-        Matrix3D { data: result_data }
-    }
-
     // Performs sequential (non-parallel) multiplication of corresponding 2D matrices from two 3D matrices
     pub fn multiply_sequential(&self, other: &Matrix3D) -> Matrix3D {
         assert_eq!(self.data.len(), other.data.len(), "The number of layers must be equal.");
@@ -151,6 +56,40 @@ impl Matrix3D {
 
         Matrix3D { data: result_data }
     }
-
+        // A generic method for parallel matrix multiplication with a specified number of cores.
+        pub fn multiply_parallel(&self, other: &Matrix3D, num_threads: usize) -> Matrix3D {
+            assert_eq!(self.data.len(), other.data.len(), "The number of layers must be equal.");
     
-}
+            // Create a thread pool with the specified number of threads.
+            let pool = rayon::ThreadPoolBuilder::new().num_threads(num_threads).build().unwrap();
+    
+            // Use the thread pool to perform the parallel multiplication.
+            pool.install(|| {
+                let result_data: Vec<Vec<Vec<u32>>> = self.data.par_iter().zip(other.data.par_iter())
+                    .map(|(a_layer, b_layer)| {
+                        let b_transposed: Vec<Vec<u32>> = (0..b_layer[0].len())
+                            .map(|i| b_layer.iter().map(|row| row[i]).collect())
+                            .collect();
+                        
+                        // Performing 2D matrix multiplication for each layer.
+                        a_layer.iter()
+                            .map(|a_row| {
+                                b_transposed.iter()
+                                    .map(|b_row| {
+                                        a_row.iter()
+                                            .zip(b_row)
+                                            .map(|(a_val, b_val)| a_val * b_val)
+                                            .sum()
+                                    })
+                                    .collect()
+                            })
+                            .collect()
+                    })
+                    .collect(); // Collects into Vec<Vec<Vec<u32>>>
+            
+                // Construct a Matrix3D from the result_data
+                Matrix3D { data: result_data }
+            })
+        }
+    }
+

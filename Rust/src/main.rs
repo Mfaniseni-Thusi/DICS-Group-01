@@ -9,6 +9,7 @@ use std::io::{Write, BufWriter};
 use std::time::{Duration, Instant};
 
 fn main() {
+    
     let dimensions = [10, 20, 30];
     let runs = 100;
 
@@ -31,35 +32,37 @@ fn main() {
 
     println!("Write to csv success!");
 }
-
 fn test_matrix_multiplication_2d(dimensions: usize, runs: usize, writer: &mut BufWriter<File>) {
     let mut total_duration_sequential = Duration::new(0, 0);
-    let mut total_duration_parallel = Duration::new(0, 0);
-    let mut total_duration_over_parallel = Duration::new(0, 0);
+    let mut total_duration_2_core = Duration::new(0, 0);
+    let mut total_duration_3_core = Duration::new(0, 0);
 
     for _ in 0..runs {
         let matrix_a = Matrix::new_random(dimensions, dimensions);
         let matrix_b = Matrix::new_random(dimensions, dimensions);
 
+        // Sequential multiplication
         let start = Instant::now();
         let _ = matrix_a.multiply_sequential(&matrix_b);
         total_duration_sequential += start.elapsed();
 
+        // Parallel multiplication with 2 cores
         let start = Instant::now();
-        let _ = matrix_a.multiply_2_core(&matrix_b);
-        total_duration_parallel += start.elapsed();
+        let _ = matrix_a.multiply_parallel(&matrix_b, 2); // Using 2 cores
+        total_duration_2_core += start.elapsed();
 
+        // Parallel multiplication with 3 cores
         let start = Instant::now();
-        let _ = matrix_a.multiply_3_core(&matrix_b);
-        total_duration_over_parallel += start.elapsed();
+        let _ = matrix_a.multiply_parallel(&matrix_b, 3); // Using 3 cores
+        total_duration_3_core += start.elapsed();
     }
 
     let average_duration_sequential = total_duration_sequential / runs as u32;
-    let average_duration_parallel = total_duration_parallel / runs as u32;
-    let average_duration_over_parallel = total_duration_over_parallel / runs as u32;
+    let average_duration_2_core = total_duration_2_core / runs as u32;
+    let average_duration_3_core = total_duration_3_core / runs as u32;
 
     // Print in CSV format
-    writeln!(writer, "{},2D,{},{},{}", dimensions, average_duration_sequential.as_nanos(), average_duration_parallel.as_nanos(), average_duration_over_parallel.as_nanos()).expect("Could not write 2D data");
+    writeln!(writer, "{},2D,{},{},{}", dimensions, average_duration_sequential.as_nanos(), average_duration_2_core.as_nanos(), average_duration_3_core.as_nanos()).expect("Could not write 2D data");
 }
 
 fn test_matrix_multiplication_3d(dimensions: usize, runs: usize, writer: &mut BufWriter<File>) {
@@ -72,20 +75,24 @@ fn test_matrix_multiplication_3d(dimensions: usize, runs: usize, writer: &mut Bu
         let matrix_3d_a = Matrix3D::new_random(dimensions, dimensions, dimensions);
         let matrix_3d_b = Matrix3D::new_random(dimensions, dimensions, dimensions);
 
+        // Sequential multiplication
         let start = Instant::now();
         let _ = matrix_3d_a.multiply_sequential(&matrix_3d_b);
         total_duration_sequential += start.elapsed();
 
+        // Parallel multiplication with 2 cores
         let start = Instant::now();
-        let _ = matrix_3d_a.multiply_2_core(&matrix_3d_b);
+        let _ = matrix_3d_a.multiply_parallel(&matrix_3d_b, 2);
         total_duration_2_core += start.elapsed();
 
+        // Parallel multiplication with 3 cores
         let start = Instant::now();
-        let _ = matrix_3d_a.multiply_3_core(&matrix_3d_b);
+        let _ = matrix_3d_a.multiply_parallel(&matrix_3d_b, 3);
         total_duration_3_core += start.elapsed();
 
+        // Parallel multiplication with 4 cores
         let start = Instant::now();
-        let _ = matrix_3d_a.multiply_4_core(&matrix_3d_b);
+        let _ = matrix_3d_a.multiply_parallel(&matrix_3d_b, 4);
         total_duration_4_core += start.elapsed();
     }
 
