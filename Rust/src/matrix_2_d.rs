@@ -32,7 +32,6 @@ impl Matrix {
         Matrix { data }
     }
 
-    // A public method for performing sequential matrix multiplication.
     // It takes a reference to another `Matrix` as a parameter and returns a new `Matrix` that is
     // the result of multiplying `self` with the other matrix.
     pub fn multiply_sequential(&self, other: &Matrix) -> Matrix {
@@ -59,20 +58,36 @@ impl Matrix {
         Matrix { data: result_data }
     }
 
+    // This function performs parallel 2D matrix multiplication using a specified number of threads.
     pub fn rank2_tensor_mult_thread(&self, other: &Matrix, num_cores: usize) -> Matrix {
-        let pool = ThreadPoolBuilder::new().num_threads(num_cores).build().unwrap();
 
+        // Creates a thread pool with a specified number of threads (`num_cores`). 
+        // `unwrap()` is called to get the result of `build()`, which may panic if the thread pool cannot be created.
+        let pool = ThreadPoolBuilder::new().num_threads(num_cores).build().unwrap();
+    
+        // Transposes the `other` matrix to facilitate efficient row-by-column multiplication.
+        // It iterates over the columns of `other` and collects each column into a new row, effectively transposing the matrix.
         let b_transposed: Vec<Vec<u32>> = (0..other.data[0].len())
             .map(|i| other.data.iter().map(|row| row[i]).collect())
             .collect();
-
+    
+        // Uses the thread pool to execute the closure in parallel.
         pool.install(|| {
-            let result_data: Vec<Vec<u32>> = self.data.par_iter().map(|a_row| {
-                b_transposed.iter().map(|b_row| {
-                    a_row.iter().zip(b_row).map(|(a, b)| a * b).sum()
-                }).collect()
-            }).collect();
 
+            // Maps each row of `self.data` in parallel (using `par_iter()` from Rayon) to a new row in the result matrix.
+            let result_data: Vec<Vec<u32>> = self.data.par_iter().map(|a_row| {
+
+                // For each row in `a_row`, iterates over each row in `b_transposed` to compute the dot product.
+                b_transposed.iter().map(|b_row| {
+
+                    // Calculates the dot product of `a_row` and `b_row`.
+                    // `zip()` pairs up elements from `a_row` and `b_row`, then `map()` applies the multiplication to each pair.
+                    // `sum()` aggregates the results of the multiplications into a single value, which is the element of the resulting matrix.
+                    a_row.iter().zip(b_row).map(|(a, b)| a * b).sum()
+                }).collect() 
+            }).collect(); 
+    
+            // Returns a new `Matrix` instance containing the result of the multiplication.
             Matrix { data: result_data }
         })
     }

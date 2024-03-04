@@ -56,6 +56,7 @@ impl Matrix3D {
 
         Matrix3D { data: result_data }
     }
+    
     // A generic method for parallel matrix multiplication with a specified number of cores.
     pub fn rank3_tensor_mult_thread(&self, other: &Matrix3D, num_threads: usize) -> Matrix3D {
         assert_eq!(self.data.len(), other.data.len(), "The number of layers must be equal.");
