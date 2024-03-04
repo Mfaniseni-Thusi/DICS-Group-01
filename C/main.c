@@ -6,9 +6,58 @@
 #include <pthread.h>
 
 #define ROUNDS 100
+#define NUM_SIZES 3  
+#define NUM_THREADS 4  
+
+double test2DMatrix(unsigned int size, unsigned int numThreads);
+double test3DMatrix(unsigned int size, unsigned int numThreads);
+
+int main() {
+    unsigned int sizes[] = {10, 20, 30};
+    double results2D[NUM_SIZES][NUM_THREADS];
+    double results3D[NUM_SIZES][NUM_THREADS];
+
+    // Perform tests and store results
+    for (int i = 0; i < NUM_SIZES; i++) {
+        for (int j = 0; j < NUM_THREADS; j++) {
+            results2D[i][j] = test2DMatrix(sizes[i], j + 1);
+            results3D[i][j] = test3DMatrix(sizes[i], j + 1);
+        }
+    }
+
+    // Open a file for writing
+    FILE *fp = fopen("matrix_performance.csv", "w");
+    if (fp == NULL) {
+        printf("Failed to open file for writing.\n");
+        return -1;
+    }
+
+    // Write headers to the CSV
+    fprintf(fp, "Dimension,Type,Sequential,2-Core,3-Core,4-Core\n");
+
+    // Write results to the file
+    for (int i = 0; i < NUM_SIZES; i++) {
+        fprintf(fp, "%u,2D", sizes[i]);
+        for (int j = 0; j < NUM_THREADS; j++) {
+            fprintf(fp, ",%f", results2D[i][j]);
+        }
+        fprintf(fp, "\n");
+
+        fprintf(fp, "%u,3D", sizes[i]);
+        for (int j = 0; j < NUM_THREADS; j++) {
+            fprintf(fp, ",%f", results3D[i][j]);
+        }
+        fprintf(fp, "\n");
+    }
+
+    // Close the file
+    fclose(fp);
+
+    return 0;
+}
 
 // Pass FILE pointer as an argument
-void test2DMatrix(unsigned int size, unsigned int numThreads, FILE *fp) {
+double test2DMatrix(unsigned int size, unsigned int numThreads) {
     double totalTime = 0.0;
     for (int i = 0; i < ROUNDS; i++) {
         Matrix a = createRandomMatrix(size, size);
@@ -25,12 +74,12 @@ void test2DMatrix(unsigned int size, unsigned int numThreads, FILE *fp) {
         totalTime += (double)(end - start) / CLOCKS_PER_SEC;
         // Free memory (to be implemented)
     }
-    // Use fprintf to write to the file
-    fprintf(fp, "2D Matrix %ux%u, Threads: %u, Avg Time: %f seconds\n", size, size, numThreads, totalTime / ROUNDS);
+
+    return totalTime / ROUNDS; 
 }
 
 // Pass FILE pointer as an argument
-void test3DMatrix(unsigned int size, unsigned int numThreads, FILE *fp) {
+double test3DMatrix(unsigned int size, unsigned int numThreads) {
     double totalTime = 0.0;
     for (int i = 0; i < ROUNDS; i++) {
         Matrix3D a = createRandomMatrix3D(size, size, size);
@@ -47,35 +96,6 @@ void test3DMatrix(unsigned int size, unsigned int numThreads, FILE *fp) {
         totalTime += (double)(end - start) / CLOCKS_PER_SEC;
         // Free memory (to be implemented)
     }
-    // Use fprintf to write to the file
-    fprintf(fp, "3D Matrix %ux%ux%u, Threads: %u, Avg Time: %f seconds\n", size, size, size, numThreads, totalTime / ROUNDS);
+
+    return totalTime / ROUNDS;
 }
-
-int main() {
-    unsigned int sizes[] = {10, 20, 30};
-    unsigned int numThreads[] = {1, 2, 3, 4};
-
-    // Open a file for writing
-    FILE *fp = fopen("matrix_performance.csv", "w");
-    if (fp == NULL) {
-        printf("Failed to open file for writing.\n");
-        return -1;
-    }
-
-    // Write headers to the CSV
-    fprintf(fp, "Matrix Type, Size, Threads, Avg Time (seconds)\n");
-
-    for (int i = 0; i < sizeof(sizes) / sizeof(sizes[0]); i++) {
-        for (int j = 0; j < sizeof(numThreads) / sizeof(numThreads[0]); j++) {
-            test2DMatrix(sizes[i], numThreads[j], fp);
-            test3DMatrix(sizes[i], numThreads[j], fp);
-        }
-    }
-
-    // Close the file
-    fclose(fp);
-
-    return 0;
-}
-
-//gcc -o matrixProgram main.c matrix2D.c matrix3D.c -lpthread
