@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Load the data from CSV
-results_df = pd.read_csv('Rust/results.csv')
+results_df = pd.read_csv('Rust/Rust_results.csv')
 
 # Define core configurations
 cores = ['Sequential', '2-Core', '3-Core', '4-Core']

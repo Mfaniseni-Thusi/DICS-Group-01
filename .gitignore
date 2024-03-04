@@ -1,4 +1,5 @@
 Rust/target/
+3DinC/*.csv
 *.csv
 *.txt
 .vscode/

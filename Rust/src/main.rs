@@ -16,7 +16,7 @@ fn main() {
     println!("Values averaging across {} runs...", runs);
 
     // Open a file for writing
-    let file = File::create("results.csv").expect("Could not create file");
+    let file = File::create("Rust_results.csv").expect("Could not create file");
     let mut writer = BufWriter::new(file);
 
     // Write headers
