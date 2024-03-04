@@ -56,40 +56,40 @@ impl Matrix3D {
 
         Matrix3D { data: result_data }
     }
-        // A generic method for parallel matrix multiplication with a specified number of cores.
-        pub fn multiply_parallel(&self, other: &Matrix3D, num_threads: usize) -> Matrix3D {
-            assert_eq!(self.data.len(), other.data.len(), "The number of layers must be equal.");
-    
-            // Create a thread pool with the specified number of threads.
-            let pool = rayon::ThreadPoolBuilder::new().num_threads(num_threads).build().unwrap();
-    
-            // Use the thread pool to perform the parallel multiplication.
-            pool.install(|| {
-                let result_data: Vec<Vec<Vec<u32>>> = self.data.par_iter().zip(other.data.par_iter())
-                    .map(|(a_layer, b_layer)| {
-                        let b_transposed: Vec<Vec<u32>> = (0..b_layer[0].len())
-                            .map(|i| b_layer.iter().map(|row| row[i]).collect())
-                            .collect();
-                        
-                        // Performing 2D matrix multiplication for each layer.
-                        a_layer.iter()
-                            .map(|a_row| {
-                                b_transposed.iter()
-                                    .map(|b_row| {
-                                        a_row.iter()
-                                            .zip(b_row)
-                                            .map(|(a_val, b_val)| a_val * b_val)
-                                            .sum()
-                                    })
-                                    .collect()
-                            })
-                            .collect()
-                    })
-                    .collect(); // Collects into Vec<Vec<Vec<u32>>>
-            
-                // Construct a Matrix3D from the result_data
-                Matrix3D { data: result_data }
-            })
-        }
+    // A generic method for parallel matrix multiplication with a specified number of cores.
+    pub fn rank3_tensor_mult_thread(&self, other: &Matrix3D, num_threads: usize) -> Matrix3D {
+        assert_eq!(self.data.len(), other.data.len(), "The number of layers must be equal.");
+
+        // Create a thread pool with the specified number of threads.
+        let pool = rayon::ThreadPoolBuilder::new().num_threads(num_threads).build().unwrap();
+
+        // Use the thread pool to perform the parallel multiplication.
+        pool.install(|| {
+            let result_data: Vec<Vec<Vec<u32>>> = self.data.par_iter().zip(other.data.par_iter())
+                .map(|(a_layer, b_layer)| {
+                    let b_transposed: Vec<Vec<u32>> = (0..b_layer[0].len())
+                        .map(|i| b_layer.iter().map(|row| row[i]).collect())
+                        .collect();
+                    
+                    // Performing 2D matrix multiplication for each layer.
+                    a_layer.iter()
+                        .map(|a_row| {
+                            b_transposed.iter()
+                                .map(|b_row| {
+                                    a_row.iter()
+                                        .zip(b_row)
+                                        .map(|(a_val, b_val)| a_val * b_val)
+                                        .sum()
+                                })
+                                .collect()
+                        })
+                        .collect()
+                })
+                .collect(); // Collects into Vec<Vec<Vec<u32>>>
+        
+            // Construct a Matrix3D from the result_data
+            Matrix3D { data: result_data }
+        })
     }
+}
 

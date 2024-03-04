@@ -19,7 +19,7 @@ speed_up_df = results_df.copy()
 speed_up_df[cores] = speed_up_df.apply(calc_speed_up, axis=1)
 
 # Initialize the figure and subplots for speed-up
-fig_speed_up, axs_speed_up = plt.subplots(1, 2, figsize=(20, 6), sharey=True)  # Shared y-axis for comparability
+fig_speed_up, axs_speed_up = plt.subplots(1, 2, figsize=(20, 6)) 
 
 # Plot speed-up factor
 for ax, dtype in zip(axs_speed_up, ['2D', '3D']):
@@ -39,7 +39,7 @@ for ax in axs_speed_up:
 axs_speed_up[0].set_title('2D Matrix Multiplication Performance Relative to Sequential')
 axs_speed_up[1].set_title('3D Matrix Multiplication Performance Relative to Sequential')
 fig_speed_up.tight_layout()
-fig_speed_up.savefig('Speed_Up_Matrix_Multiplication_Performance.png', dpi=300)
+fig_speed_up.savefig('Speed_Up_Performance.png', dpi=300)
 
 # Plot raw performance time
 fig_raw, axs_raw = plt.subplots(1, 2, figsize=(20, 6))
@@ -60,7 +60,5 @@ for ax in axs_raw:
 axs_raw[0].set_title('2D Matrix Multiplication Raw Performance Time')
 axs_raw[1].set_title('3D Matrix Multiplication Raw Performance Time')
 fig_raw.tight_layout()
-fig_raw.savefig('Raw_Performance_Matrix_Multiplication.png', dpi=300)
+fig_raw.savefig('Raw_Performance.png', dpi=300)
 
-# Show the plots
-plt.show()

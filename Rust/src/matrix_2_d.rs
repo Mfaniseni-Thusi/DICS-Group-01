@@ -59,33 +59,20 @@ impl Matrix {
         Matrix { data: result_data }
     }
 
-    pub fn multiply_parallel(&self, other: &Matrix, num_cores: usize) -> Matrix {
-        // Create a thread pool with the specified number of threads.
+    pub fn rank2_tensor_mult_thread(&self, other: &Matrix, num_cores: usize) -> Matrix {
         let pool = ThreadPoolBuilder::new().num_threads(num_cores).build().unwrap();
 
+        let b_transposed: Vec<Vec<u32>> = (0..other.data[0].len())
+            .map(|i| other.data.iter().map(|row| row[i]).collect())
+            .collect();
+
         pool.install(|| {
-            // Transpose the second matrix to optimize access patterns in the multiplication.
-            let b_transposed: Vec<Vec<u32>> = (0..other.data[0].len())
-                .map(|i| other.data.iter().map(|row| row[i]).collect())
-                .collect();
+            let result_data: Vec<Vec<u32>> = self.data.par_iter().map(|a_row| {
+                b_transposed.iter().map(|b_row| {
+                    a_row.iter().zip(b_row).map(|(a, b)| a * b).sum()
+                }).collect()
+            }).collect();
 
-            // Perform the matrix multiplication in parallel.
-            let result_data: Vec<Vec<u32>> = self.data.par_iter()
-                .map(|a_row| {
-                    b_transposed
-                        .iter()
-                        .map(|b_row| {
-                            a_row
-                                .iter()
-                                .zip(b_row)
-                                .map(|(a_val, b_val)| a_val * b_val)
-                                .sum()
-                        })
-                        .collect()
-                })
-                .collect();
-
-            // Return a new `Matrix` containing the result.
             Matrix { data: result_data }
         })
     }
