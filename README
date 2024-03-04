@@ -11,48 +11,20 @@ The timings of the different functions are recorded into a CSV file, which is th
 
 ---------- 2-D implementation ----------
 
-### multiply_sequential()
+#### `multiply_sequential(&self, other: &Matrix) -> Matrix`
 
-Everything ran sequentially as per mathematical equations.
+This function carries out the multiplication of two 2D matrices using the standard sequential approach. It systematically computes the product by iterating over each row of the first matrix and each column of the second matrix, accumulating the sum of the products of the corresponding elements.
 
-### multiply_2_core()
+#### `rank2_tensor_mult_thread(&self, other: &Matrix, num_cores: usize) -> Matrix`
 
-For each row in the first matrix, the dot product with every row of the transposed second matrix (stored in b_transposed) is computed in parallel.
-The rest is computed in series. 
-
-### multiply_3_core()
-
-- Parallel Part 1:
-Utilizes .par_iter() on self.data to parallelize the computation across each row of the resulting matrix.
-This parallelization ensures that the processing of different rows of the first matrix can occur simultaneously.
-
-- Parallel Part 2:
-Applies b_transposed.par_iter() for iterating over the rows of the transposed second matrix in parallel.
-Enables concurrent computation of dot products for a single row in the first matrix against all rows of the transposed second matrix.
-
-- Parallel Part 3:
-Executes the dot product calculation in parallel using a_row.par_iter().zip(b_row).map(|(a_val, b_val)| a_val * b_val).sum().
-This step ensures that the multiplication and subsequent addition operations required to compute a single dot product are also carried out in parallel.
+This function implements parallel matrix multiplication for 2D matrices. It accepts the number of threads (or cores) as an argument, allowing the multiplication task to be divided and executed across multiple threads concurrently. This parallelism aims to leverage multi-core processors to improve the computation time over the sequential approach.
 
 ---------- 3-D implementation ----------
 
-### multiply_sequential()
+#### `multiply_sequential(&self, other: &Matrix3D) -> Matrix3D`
 
-This method iterates through the layers and performs 2D matrix multiplication without parallelism.
+This method extends the sequential multiplication to 3D matrices, which are conceptualized as a stack of 2D matrices (layers). It iterates through each layer, applying the same sequential 2D matrix multiplication method to each pair of corresponding layers from the two 3D matrices.
 
-### multiply_2_core()
+#### `rank3_tensor_mult_thread(&self, other: &Matrix3D, num_threads: usize) -> Matrix3D`
 
-- Parallel Part 1: 
-Multiplication is parallelized at the layer level, iterating through each 2D matrix layer in parallel.
-
-### multiply_3_core()
-
-- Parallel Part 2:
-As above with...
-The 3D matrix is divided into chunks, and each chunk's layers are processed in parallel. Within each layer, the 2D matrix multiplication is sequential.
-
-### multiply_4_core()
-
-- Parallel Part 3:
-As above with...
-The highest parallelism level by not only iterating through each layer in parallel but also performing the dot product calculations within each 2D matrix multiplication in parallel.
+This function enables parallel multiplication of 3D matrices. It takes advantage of a specified number of threads to distribute the computation of the 3D matrix multiplication across those threads. This method allows each layer of the 3D matrix multiplication to be processed in parallel, potentially reducing computation time significantly, especially for large datasets and on systems with a high number of available cores.
